@@ -1,6 +1,5 @@
 require("dotenv").config();
 const cron = require("node-cron");
-const fetch = require("node-fetch");
 
 const { App } = require("@slack/bolt");
 
