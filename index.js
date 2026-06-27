@@ -20,23 +20,20 @@ const app = new App({
 async function generateDailyQuestion() {
   try {
     const prompt = `
-      Generate one interesting and relevant question for a Slack bot.
-      The question should be centered around technology, science, or engineering topics.
-      Avoid personal questions or sensitive information.
-      Topics: Apple, Technology, Programming, AI, Cybersecurity, Space, Engineering, Smart homes, Home automation, Minecraft, Servers, Raspberry Pi, Linux, Robotics, Future technology, Science, Gadgets, Software, Hardware, Electronics, Swimming, Creative problem solving
-      The question should be under 220 characters and vary every day.
-    `;
-
+Generate one interesting and relevant question for a Slack bot.
+The question should be centered around technology, science, or engineering topics.
+Avoid personal questions or sensitive information.
+Topics: Apple, Technology, Programming, AI, Cybersecurity, Space, Engineering, Smart homes, Home automation, Minecraft, Servers, Raspberry Pi, Linux, Robotics, Future technology, Science, Gadgets, Software, Hardware, Electronics, Swimming, Creative problem solving
+The question should be under 220 characters and vary every day.
+`;
     const response = await apiClient.createCompletion({
       model: "text-davinci-003",
       prompt,
       max_tokens: 150,
     });
-
     if (response.data.choices[0].finish_reason !== "stop") {
       throw new Error("AI generation failed to generate a question.");
     }
-
     return response.data.choices[0].text.trim();
   } catch (error) {
     console.error("Error generating daily question:", error);
@@ -50,7 +47,6 @@ async function postQuestion(questionText) {
     console.log("No valid question text to post.");
     return;
   }
-
   await app.client.chat.postMessage({
     channel: process.env.SLACK_CHANNEL_ID,
     blocks: [
