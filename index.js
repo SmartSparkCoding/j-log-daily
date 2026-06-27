@@ -1,20 +1,14 @@
 require("dotenv").config();
-const { App } = require("@slack/bolt");
 const cron = require("node-cron");
-const openai = require("openai");
-
-// Initialize the OpenAI client
-const apiClient = new openai.OpenAIApi({
-  baseURL: "https://ai.hackclub.com/proxy/v1",
-});
-
-let lastQuestionId = -1;
 
 // Initialize the Slack app
+const { App } = require("@slack/bolt");
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_TOKEN,
 });
+
+let lastQuestionId = -1;
 
 // Function to generate a daily question using Hack Club AI
 async function generateDailyQuestion() {
@@ -26,15 +20,23 @@ Avoid personal questions or sensitive information.
 Topics: Apple, Technology, Programming, AI, Cybersecurity, Space, Engineering, Smart homes, Home automation, Minecraft, Servers, Raspberry Pi, Linux, Robotics, Future technology, Science, Gadgets, Software, Hardware, Electronics, Swimming, Creative problem solving
 The question should be under 220 characters and vary every day.
 `;
-    const response = await apiClient.createCompletion({
-      model: "text-davinci-003",
-      prompt,
-      max_tokens: 150,
+    const response = await fetch(`https://ai.hackclub.com/proxy/v1/responses`, {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${process.env.HACKCLUB_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "qwen/qwen3-32b", // Use the Hack Club AI model
+        input: prompt,
+        max_output_tokens: 150,
+      }),
     });
-    if (response.data.choices[0].finish_reason !== "stop") {
-      throw new Error("AI generation failed to generate a question.");
+    const data = await response.json();
+    if (data.status !== "completed" || !data.output) {
+      throw new Error("Hack Club AI failed to generate a question.");
     }
-    return response.data.choices[0].text.trim();
+    return data.output[0].text.trim();
   } catch (error) {
     console.error("Error generating daily question:", error);
     return null;
