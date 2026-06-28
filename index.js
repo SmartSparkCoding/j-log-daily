@@ -85,6 +85,39 @@ cron.schedule("0 17 * * *", () => {
 });
 
 // --------------------
+// Respond when the bot is mentioned
+// --------------------
+app.event("app_mention", async ({ event, say }) => {
+  try {
+    console.log(`Mention received from ${event.user}`);
+
+    const question = await generateDailyQuestion();
+
+    if (!question) {
+      await say({
+        thread_ts: event.ts,
+        text: "❌ Sorry, I couldn't generate a question right now. Please try again in a moment.",
+      });
+      return;
+    }
+
+    await say({
+      thread_ts: event.ts,
+      text: `🌟 *Daily Question*\n\n${question}`,
+    });
+
+    console.log("Question sent in reply to mention.");
+  } catch (err) {
+    console.error("Mention handler error:", err);
+
+    await say({
+      thread_ts: event.ts,
+      text: "❌ Something went wrong while generating today's question.",
+    });
+  }
+});
+
+// --------------------
 // Start bot (Socket Mode)
 // --------------------
 (async () => {
