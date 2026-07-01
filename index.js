@@ -14,7 +14,7 @@ async function generateDailyQuestion() {
   try {
     const prompt = `
 Generate one interesting question of the day.
-Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science.
+Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science. The questions must be aimed towards ages 15 to 18. 
 Keep it under 220 characters.
 Return ONLY the question.
 `;
