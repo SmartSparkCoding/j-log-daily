@@ -3,9 +3,6 @@ const cron = require("node-cron");
 
 const { App } = require("@slack/bolt");
 
-// --------------------
-// Slack App (Socket Mode)
-// --------------------
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -47,7 +44,6 @@ Return ONLY the question.
     let text = "";
 
     for (const item of data.output || []) {
-      // ONLY take real assistant messages
       if (item.type === "message") {
         for (const c of item.content || []) {
           if (c.type === "output_text") {
@@ -57,7 +53,6 @@ Return ONLY the question.
       }
     }
 
-    // fallback: sometimes response is inside reasoning/text (your current case)
     if (!text) {
       for (const item of data.output || []) {
         if (item.content) {
@@ -82,9 +77,7 @@ Return ONLY the question.
     return "⚠️ Failed to generate question (check logs)";
   }
 }
-// --------------------
-// Post to Slack
-// --------------------
+
 async function postQuestion(question) {
   if (!question) return;
 
@@ -100,24 +93,15 @@ async function postQuestion(question) {
   }
 }
 
-// --------------------
-// Main daily job
-// --------------------
 async function handleDailyQuestion() {
   const question = await generateDailyQuestion();
   await postQuestion(question);
 }
 
-// --------------------
-// Schedule (17:00 UTC)
-// --------------------
 cron.schedule("0 17 * * *", () => {
   handleDailyQuestion();
 });
 
-// --------------------
-// Respond when the bot is mentioned
-// --------------------
 app.event("app_mention", async ({ event, say }) => {
   try {
     console.log(`Mention received from ${event.user}`);
@@ -148,9 +132,6 @@ app.event("app_mention", async ({ event, say }) => {
   }
 });
 
-// --------------------
-// Start bot (Socket Mode)
-// --------------------
 (async () => {
   await app.start();
   console.log("⚡ Slack bot running in Socket Mode");
