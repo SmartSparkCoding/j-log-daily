@@ -1,73 +1,23 @@
-# Slack Bot
+# J-Log Daily
 
-## Installation
+## What is it?
 
-1. **Install Dependencies:**
+J-Log Daily is a simple slack bot linked to my personal channel: #j-log! 
 
-   ```bash
-   npm install
-   ```
+At 17:00 every day, @J-Log Daily sends a message to my channel with a daily question. 
 
-2. **Run the Bot:**
+Using the Hack Club AI, I generate a question using Qwen 3 32B with this prompt:
 
-   ```bash
-   npm start
-   ```
+`Generate one interesting question of the day. Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science. The questions must be aimed towards ages 15 to 18. Keep it under 220 characters.Return ONLY the question.`
 
-3. **Start Development Mode (Using nodemon):**
+This then sends the message to #j-log.
 
-   ```bash
-   npm run dev
-   ```
+This bot is hosted on my Hack Club Nest server `mini-jacob`! 
 
-4. **Copy `.env.example` into `.env`:**
+I created this as when I asked my channel for a new feature in my personal channel, they said that a daily question would be fun! 
 
-   - Copy the contents from `/.env.example` to `/path/to/.env`.
-   - Fill in the placeholders with your actual values.
+## REVIEWERS NOTE
 
-5. **Fill in Credentials:**
+Hi Reviewer! Thank you for reviewing my project. 
 
-   - Replace `YOUR_SLACK_BOT_TOKEN`, `YOUR_SLACK_SIGNING_SECRET`, `YOUR_SLACK_APP_TOKEN`, `YOUR_SLACK_CHANNEL_ID`, and `YOUR_HACKCLUB_API_KEY` with your actual Slack bot and Hack Club AI API credentials.
-
-6. **Invite the Bot to a Slack Workspace:**
-
-   - Go to the [Slack App Directory](https://slack.com/apps) and search for "Bots".
-   - Install the app by selecting the workspace you want to add it to.
-   - Click on "Add to Slack" and authorize the app.
-
-7. **Required OAuth Scopes:**
-
-   - `chat:write`: The bot needs permission to send messages in the configured channel.
-   - `users.profile:read`: The bot might need to access user profiles if it needs to personalize questions.
-
-8. **Required Event Subscriptions:**
-
-   - Ensure that you have event subscriptions enabled for the following events:
-     - `app_mention`
-     - `message.channels`
-
-9. **Socket Mode:**
-
-   - Socket mode allows your bot to listen for messages without needing to continuously poll for them.
-   - This is a more efficient way to handle message events.
-
-## How to Use
-
-1. **Invite the Bot to a Channel:**
-
-   Make sure the bot is added to the channel where you want it to post daily questions.
-
-2. **Start Generating Questions:**
-
-   The bot will automatically generate and post a daily question at 17:00 UTC each day in the specified Slack channel.
-
-3. **Monitor and Manage:**
-
-   You can monitor the bot's logs and manage its behavior through the Slack App Directory or the bot's console.
-```
-
-#### .gitignore
-
-```plaintext
-node_modules/
-.env
+To test my bot, join #j-log. You can see other messages (one will be linked in my macondo project demo) to see the bot working previously. If you wish to run it now, just tag the bot @J-Log Daily in MY channel. After waiting a little bit for the Hack Club AI to respond, a message will be posted in the thread. 
