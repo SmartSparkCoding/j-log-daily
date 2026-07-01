@@ -12,6 +12,8 @@ Using the Hack Club AI, I generate a question using Qwen 3 32B with this prompt:
 
 This then sends the message to #j-log.
 
+It also has an app home to see if it is online, generate a question and also see the history. 
+
 This bot is hosted on my Hack Club Nest server `mini-jacob`! 
 
 I created this as when I asked my channel for a new feature in my personal channel, they said that a daily question would be fun! 
@@ -20,4 +22,8 @@ I created this as when I asked my channel for a new feature in my personal chann
 
 Hi Reviewer! Thank you for reviewing my project. 
 
-To test my bot, join #j-log. You can see other messages (one will be linked in my macondo project demo) to see the bot working previously. If you wish to run it now, just tag the bot @J-Log Daily in MY channel. After waiting a little bit for the Hack Club AI to respond, a message will be posted in the thread. 
+To test my bot, join #j-log. You can see other messages (one will be linked in my macondo project demo) to see the bot working previously. If you wish to run it now, either: 
+
+1. Just tag the bot @J-Log Daily in MY channel. After waiting a little bit for the Hack Club AI to respond, a message will be posted in the thread. 
+
+2. Go to the App Home and click generate question! 
