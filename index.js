@@ -41,19 +41,50 @@ Return ONLY the question.
     const data = await response.json();
 
     console.log("Hack Club AI response:");
-    console.dir(data, { depth: null });
+    console.dir(data, { depth: 3 });
 
-    if (!data.output || !data.output[0]) {
-      throw new Error("No AI output received");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
 
-    return data.output[0].text.trim();
+    let text = "";
+
+    for (const item of data.output || []) {
+      // ONLY take real assistant messages
+      if (item.type === "message") {
+        for (const c of item.content || []) {
+          if (c.type === "output_text") {
+            text += c.text;
+          }
+        }
+      }
+    }
+
+    // fallback: sometimes response is inside reasoning/text (your current case)
+    if (!text) {
+      for (const item of data.output || []) {
+        if (item.content) {
+          for (const c of item.content) {
+            if (c.text && typeof c.text === "string") {
+              text += c.text;
+            }
+          }
+        }
+      }
+    }
+
+    text = (text || "").trim();
+
+    if (!text) {
+      throw new Error("No usable text found in AI response");
+    }
+
+    return text;
   } catch (err) {
     console.error("AI generation error:", err);
-    return null;
+    return "⚠️ Failed to generate question (check logs)";
   }
 }
-
 // --------------------
 // Post to Slack
 // --------------------
