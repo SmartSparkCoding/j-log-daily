@@ -55,9 +55,10 @@ Keep it under 220 characters.
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "qwen/qwen3-32b",
-          input: prompt,
-          max_output_tokens: 80
+        model: "qwen/qwen3-32b",
+        input: prompt,
+        max_output_tokens: 400,
+        reasoning: { effort: "low" }
         }),
       }
     );
