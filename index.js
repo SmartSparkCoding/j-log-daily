@@ -17,11 +17,9 @@ function extractText(data) {
       for (const c of item.content || []) {
         if (c?.type === "output_text" && typeof c.text === "string") {
           text += c.text;
-        }
-        if (typeof c?.text === "string") {
+        } else if (typeof c.text === "string") {
           text += c.text;
-        }
-        if (typeof c === "string") {
+        } else if (typeof c === "string") {
           text += c;
         }
       }
@@ -33,7 +31,7 @@ function extractText(data) {
       if (Array.isArray(item?.content)) {
         for (const c of item.content) {
           if (typeof c === "string") text += c;
-          if (typeof c?.text === "string") text += c.text;
+          else if (typeof c?.text === "string") text += c.text;
         }
       }
     }
