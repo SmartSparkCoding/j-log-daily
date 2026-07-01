@@ -10,34 +10,15 @@ const app = new App({
 });
 
 function extractText(data) {
-  let text = "";
+  const message = data?.output?.find(o => o.type === "message");
 
-  for (const item of data?.output || []) {
-    if (item.type === "message") {
-      for (const c of item.content || []) {
-        if (c?.type === "output_text" && typeof c.text === "string") {
-          text += c.text;
-        } else if (typeof c.text === "string") {
-          text += c.text;
-        } else if (typeof c === "string") {
-          text += c;
-        }
-      }
-    }
-  }
+  const text = message?.content
+    ?.filter(c => c.type === "output_text")
+    ?.map(c => c.text)
+    ?.join("")
+    ?.trim();
 
-  if (!text) {
-    for (const item of data?.output || []) {
-      if (Array.isArray(item?.content)) {
-        for (const c of item.content) {
-          if (typeof c === "string") text += c;
-          else if (typeof c?.text === "string") text += c.text;
-        }
-      }
-    }
-  }
-
-  return (text || "").trim() || null;
+  return text || null;
 }
 
 async function generateDailyQuestion() {
@@ -60,7 +41,7 @@ Return ONLY the question.
         body: JSON.stringify({
           model: "qwen/qwen3-32b",
           input: prompt,
-          max_output_tokens: 500
+          max_output_tokens: 120
         }),
       }
     );
@@ -77,7 +58,6 @@ Return ONLY the question.
     const text = extractText(data);
 
     if (!text) {
-      console.log("FULL RAW RESPONSE:", JSON.stringify(data, null, 2));
       throw new Error("No usable text found in AI response");
     }
 
@@ -94,7 +74,7 @@ async function postQuestion(question) {
   try {
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL_ID,
-      text: `🌟 *Daily Question*\n Reply in the Thread! \n\n${question}`,
+      text: `:star2: *Daily Question*\n Reply in the Thread! \n\n${question}`,
     });
 
     console.log("Posted question:", question);
@@ -128,7 +108,7 @@ app.event("app_mention", async ({ event, say }) => {
 
     await say({
       thread_ts: event.ts,
-      text: `🌟 *Daily Question*\n Reply in the Thread! \n\n${question}`,
+      text: `:star2: *Daily Question*\n Reply in the Thread! \n\n${question}`,
     });
 
     console.log("Question sent in reply to mention.");
