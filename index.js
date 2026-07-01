@@ -10,15 +10,36 @@ const app = new App({
 });
 
 function extractText(data) {
-  const message = data?.output?.find(o => o.type === "message");
+  let text = "";
 
-  const text = message?.content
-    ?.map(c => c.text)
-    .filter(Boolean)
-    .join("")
-    ?.trim();
+  for (const item of data?.output || []) {
+    if (item.type === "message") {
+      for (const c of item.content || []) {
+        if (c?.type === "output_text" && typeof c.text === "string") {
+          text += c.text;
+        }
+        if (typeof c?.text === "string") {
+          text += c.text;
+        }
+        if (typeof c === "string") {
+          text += c;
+        }
+      }
+    }
+  }
 
-  return text || null;
+  if (!text) {
+    for (const item of data?.output || []) {
+      if (Array.isArray(item?.content)) {
+        for (const c of item.content) {
+          if (typeof c === "string") text += c;
+          if (typeof c?.text === "string") text += c.text;
+        }
+      }
+    }
+  }
+
+  return (text || "").trim() || null;
 }
 
 async function generateDailyQuestion() {
@@ -41,7 +62,7 @@ Return ONLY the question.
         body: JSON.stringify({
           model: "qwen/qwen3-32b",
           input: prompt,
-          max_output_tokens: 300, 
+          max_output_tokens: 500
         }),
       }
     );
@@ -58,6 +79,7 @@ Return ONLY the question.
     const text = extractText(data);
 
     if (!text) {
+      console.log("FULL RAW RESPONSE:", JSON.stringify(data, null, 2));
       throw new Error("No usable text found in AI response");
     }
 
@@ -126,4 +148,3 @@ app.event("app_mention", async ({ event, say }) => {
   await app.start();
   console.log("⚡ Slack bot running in Socket Mode");
 })();
-
