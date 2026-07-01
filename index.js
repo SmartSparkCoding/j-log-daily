@@ -1,6 +1,5 @@
 require("dotenv").config();
 const cron = require("node-cron");
-
 const { App } = require("@slack/bolt");
 
 const app = new App({
@@ -10,27 +9,42 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN,
 });
 
+function extractText(data) {
+  const message = data?.output?.find(o => o.type === "message");
+
+  const text = message?.content
+    ?.map(c => c.text)
+    .filter(Boolean)
+    .join("")
+    ?.trim();
+
+  return text || null;
+}
+
 async function generateDailyQuestion() {
   try {
     const prompt = `
 Generate one interesting question of the day.
-Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science. The questions must be aimed towards ages 15 to 18. 
+Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science. The questions must be aimed towards ages 15 to 18.
 Keep it under 220 characters.
 Return ONLY the question.
 `;
 
-    const response = await fetch("https://ai.hackclub.com/proxy/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.HACKCLUB_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "qwen/qwen3-32b",
-        input: prompt,
-        max_output_tokens: 150,
-      }),
-    });
+    const response = await fetch(
+      "https://ai.hackclub.com/proxy/v1/responses",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.HACKCLUB_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "qwen/qwen3-32b",
+          input: prompt,
+          max_output_tokens: 300, 
+        }),
+      }
+    );
 
     const data = await response.json();
 
@@ -41,31 +55,7 @@ Return ONLY the question.
       throw new Error(`HTTP ${response.status}`);
     }
 
-    let text = "";
-
-    for (const item of data.output || []) {
-      if (item.type === "message") {
-        for (const c of item.content || []) {
-          if (c.type === "output_text") {
-            text += c.text;
-          }
-        }
-      }
-    }
-
-    if (!text) {
-      for (const item of data.output || []) {
-        if (item.content) {
-          for (const c of item.content) {
-            if (c.text && typeof c.text === "string") {
-              text += c.text;
-            }
-          }
-        }
-      }
-    }
-
-    text = (text || "").trim();
+    const text = extractText(data);
 
     if (!text) {
       throw new Error("No usable text found in AI response");
@@ -74,7 +64,7 @@ Return ONLY the question.
     return text;
   } catch (err) {
     console.error("AI generation error:", err);
-    return "⚠️ Failed to generate question (check logs)";
+    return "Failed to generate question (check logs)";
   }
 }
 
@@ -84,7 +74,7 @@ async function postQuestion(question) {
   try {
     await app.client.chat.postMessage({
       channel: process.env.SLACK_CHANNEL_ID,
-      text: `🌟 Daily Question\n${question}`,
+      text: `🌟 *Daily Question*\n Reply in the Thread! \n\n${question}`,
     });
 
     console.log("Posted question:", question);
@@ -111,14 +101,14 @@ app.event("app_mention", async ({ event, say }) => {
     if (!question) {
       await say({
         thread_ts: event.ts,
-        text: "❌ Sorry, I couldn't generate a question right now. Please try again in a moment.",
+        text: "Sorry, I couldn't generate a question right now. Please try again in a moment.",
       });
       return;
     }
 
     await say({
       thread_ts: event.ts,
-      text: `🌟 *Daily Question*\n\n${question}`,
+      text: `🌟 *Daily Question*\n Reply in the Thread! \n\n${question}`,
     });
 
     console.log("Question sent in reply to mention.");
@@ -127,7 +117,7 @@ app.event("app_mention", async ({ event, say }) => {
 
     await say({
       thread_ts: event.ts,
-      text: "❌ Something went wrong while generating today's question.",
+      text: "Something went wrong while generating today's question. Please contact @Jacob.",
     });
   }
 });
@@ -136,3 +126,4 @@ app.event("app_mention", async ({ event, say }) => {
   await app.start();
   console.log("⚡ Slack bot running in Socket Mode");
 })();
+
