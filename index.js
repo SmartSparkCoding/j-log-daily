@@ -55,9 +55,9 @@ Keep it under 220 characters.
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-        model: "qwen/qwen3-32b",
+        model: "google/gemini-3.1-flash-lite",
         input: prompt,
-        max_output_tokens: 400,
+        max_output_tokens: 600,
         reasoning: { effort: "low" }
         }),
       }
