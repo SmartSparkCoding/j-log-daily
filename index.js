@@ -10,13 +10,28 @@ const app = new App({
 });
 
 function extractText(data) {
-  const message = data?.output?.find(o => o.type === "message");
+  const outputs = data?.output || [];
 
-  const text = message?.content
-    ?.filter(c => c.type === "output_text")
-    ?.map(c => c.text)
-    ?.join("")
-    ?.trim();
+  let text = "";
+
+  for (const item of outputs) {
+    if (item.type === "message" && Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if (c.type === "output_text" && typeof c.text === "string") {
+          text += c.text;
+        }
+        if (typeof c.text === "string" && !c.type) {
+          text += c.text;
+        }
+      }
+    }
+
+    if (item.type === "output_text" && typeof item.text === "string") {
+      text += item.text;
+    }
+  }
+
+  text = (text || "").replace(/\n{3,}/g, "\n\n").trim();
 
   return text || null;
 }
@@ -26,8 +41,9 @@ async function generateDailyQuestion() {
     const prompt = `
 Generate one interesting question of the day.
 Focus broadly on: technology, AI, Apple, programming, cybersecurity, space, engineering, smart homes, Minecraft, Linux, servers, robotics, and science. The questions must be aimed towards ages 15 to 18.
+IMPORTANT: Do NOT include any reasoning, explanation, or thinking steps.
+Return ONLY a single clean question.
 Keep it under 220 characters.
-Return ONLY the question.
 `;
 
     const response = await fetch(
@@ -41,7 +57,7 @@ Return ONLY the question.
         body: JSON.stringify({
           model: "qwen/qwen3-32b",
           input: prompt,
-          max_output_tokens: 120
+          max_output_tokens: 80
         }),
       }
     );
