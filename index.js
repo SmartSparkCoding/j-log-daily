@@ -103,10 +103,84 @@ async function postQuestion(question) {
 async function handleDailyQuestion() {
   const question = await generateDailyQuestion();
   await postQuestion(question);
+
+  const users = await app.client.users.list();
+  const botUser = users.members.find(u => u.is_bot);
+
+  if (botUser) {
+    await publishHome(botUser.id, question);
+  }
 }
 
-cron.schedule("0 17 * * *", () => {
-  handleDailyQuestion();
+async function publishHome(userId, question = null) {
+  const blocks = [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: "🌟 Daily Question Bot",
+      },
+    },
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "Status: *Alive and slightly chaotic 🤖*",
+      },
+    },
+    {
+      type: "divider",
+    },
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: question
+          ? `*Latest Question:*\n> ${question}`
+          : "_No question generated yet. Press the button below._",
+      },
+    },
+    {
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Generate Question 🎲",
+          },
+          action_id: "generate_question",
+          style: "primary",
+        },
+      ],
+    },
+  ];
+
+  await app.client.views.publish({
+    user_id: userId,
+    view: {
+      type: "home",
+      callback_id: "home_view",
+      blocks,
+    },
+  });
+}
+
+app.action("generate_question", async ({ ack, body, client }) => {
+  await ack();
+
+  try {
+    const question = await generateDailyQuestion();
+
+    await publishHome(body.user.id, question);
+  } catch (err) {
+    console.error("Button generate error:", err);
+  }
+});
+
+cron.schedule("0 17 * * *", async () => {
+  const question = await generateDailyQuestion();
+  await postQuestion(question);
 });
 
 app.event("app_mention", async ({ event, say }) => {
@@ -136,6 +210,14 @@ app.event("app_mention", async ({ event, say }) => {
       thread_ts: event.ts,
       text: "Something went wrong while generating today's question. Please contact @Jacob.",
     });
+  }
+});
+
+app.event("app_home_opened", async ({ event }) => {
+  try {
+    await publishHome(event.user);
+  } catch (err) {
+    console.error("App Home error:", err);
   }
 });
 
