@@ -40,6 +40,9 @@ Return ONLY the question.
 
     const data = await response.json();
 
+    console.log("Hack Club AI response:");
+    console.dir(data, { depth: null });
+
     if (!data.output || !data.output[0]) {
       throw new Error("No AI output received");
     }
